@@ -87,7 +87,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    border: 2px solid #9b59b6;
+    border: 2px solid #3498db;
     padding: 15px;
 }
 
@@ -96,7 +96,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border: 1px solid #e74c3c;
+    border: 1px solid #3498db;
     padding: 10px;
 }
 
@@ -123,7 +123,7 @@ body {
     align-items: center;
     flex: 1;
     min-width: 150px;
-    border: 1px solid #e74c3c;
+    border: 1px solid #cccccc;
     padding: 5px;
 }
 
@@ -176,7 +176,7 @@ body {
 
 /* --- About Section --- */
 .about-section {
-    border: 1px solid #27ae60;
+    border: 1px solid #3498db;
     padding: 10px;
 }
 
@@ -262,7 +262,7 @@ body {
     font-size: 28px;
     font-family: Georgia, serif;
     color: #1a1a2e;
-    border: 3px solid #c0392b;
+    border: 3px solid #3498db;
     padding: 15px;
     margin: 20px auto 10px;
     background-color: #ffffff;
@@ -307,7 +307,7 @@ body {
     width: 220px;
     height: 26px;
     font-size: 14px;
-    border: 1px solid #aaaaaa;
+    border: 1px solid #cccccc;
     padding: 3px 6px;
 }
 
@@ -315,7 +315,7 @@ body {
     width: 220px;
     height: 26px;
     font-size: 14px;
-    border: 1px solid #aaaaaa;
+    border: 1px solid #cccccc;
     padding: 3px 6px;
 }
 
@@ -323,7 +323,7 @@ body {
     width: 234px;
     height: 34px;
     font-size: 14px;
-    border: 1px solid #aaaaaa;
+    border: 1px solid #cccccc;
     background-color: #ffffff;
     color: #333333;
     padding: 3px 6px;
