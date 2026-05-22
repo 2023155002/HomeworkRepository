@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Programming Movie Site</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-inner">
+            <span class="header-title">영화 정보 사이트입니다.</span>
+        </div>
+        <nav class="nav-bar">
+            <a class="nav-link active" href="index.html">메인페이지</a>
+            <a class="nav-link" href="login.html">로그인</a>
+            <a class="nav-link" href="signup.html">회원가입</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input class="search-input" type="text" id="searchInput" placeholder="키워드를 입력하세요">
+            <button class="search-btn" id="searchBtn">Filter results</button>
+        </div>
+
+        <!-- Movies Section -->
+        <div class="movies-section">
+            <h2 class="section-title">Movies</h2>
+
+            <div class="movies-layout">
+
+                <!-- Sort Panel -->
+                <div class="sort-panel">
+                    <p class="sort-title">정렬 기준</p>
+                    <label class="sort-label">
+                        <input type="radio" name="sort" value="rating-desc"> 평점 내림차순
+                    </label>
+                    <label class="sort-label">
+                        <input type="radio" name="sort" value="rating-asc"> 평점 오름차순
+                    </label>
+                    <label class="sort-label">
+                        <input type="radio" name="sort" value="date-desc"> 개봉 내림차순
+                    </label>
+                    <label class="sort-label">
+                        <input type="radio" name="sort" value="date-asc"> 개봉 오름차순
+                    </label>
+                </div>
+
+                <!-- Movie Grid -->
+                <div class="movies-grid" id="moviesGrid"></div>
+
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading-indicator" id="loadingIndicator" style="display:none;">불러오는 중...</div>
+
+            <!-- Scroll Sentinel -->
+            <div id="scrollSentinel"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const MOVIES_PER_PAGE = 6;
+    let allMovies = [];
+    let filteredMovies = [];
+    let currentPage = 0;
+    let isLoading = false;
+    let allLoaded = false;
+
+    fetch('product.json')
+        .then(res => res.json())
+        .then(data => {
+            allMovies = data.movies;
+            filteredMovies = [...allMovies];
+            loadNextBatch();
+            setupInfiniteScroll();
+        })
+        .catch(err => {
+            console.error('Failed to load product.json:', err);
+            document.getElementById('loadingIndicator').textContent = '⚠ 로컬 서버에서 열어야 합니다: python3 -m http.server 8000';
+            document.getElementById('loadingIndicator').style.display = 'block';
+        });
+
+    function loadNextBatch() {
+        if (isLoading || allLoaded) return;
+        isLoading = true;
+        document.getElementById('loadingIndicator').style.display = 'block';
+
+        const start = currentPage * MOVIES_PER_PAGE;
+        const end = start + MOVIES_PER_PAGE;
+        const batch = filteredMovies.slice(start, end);
+
+        if (batch.length === 0) {
+            allLoaded = true;
+            document.getElementById('loadingIndicator').style.display = 'none';
+            isLoading = false;
+            return;
+        }
+
+        batch.forEach(movie => {
+            document.getElementById('moviesGrid').appendChild(createMovieCard(movie));
+        });
+
+        currentPage++;
+
+        if (currentPage * MOVIES_PER_PAGE >= filteredMovies.length) {
+            allLoaded = true;
+        }
+
+        document.getElementById('loadingIndicator').style.display = 'none';
+        isLoading = false;
+    }
+
+    function createMovieCard(movie) {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'movie-img-wrapper';
+
+        const img = document.createElement('img');
+        img.className = 'movie-img';
+        img.src = movie.poster;
+        img.alt = movie.title;
+        img.onerror = function() {
+            this.remove();
+            const fallback = document.createElement('div');
+            fallback.className = 'movie-poster-fallback';
+            fallback.innerHTML =
+                '<span class="fallback-genre">' + movie.genre + '</span>' +
+                '<span class="fallback-title">' + movie.title + '</span>';
+            imgWrapper.insertBefore(fallback, overlay);
+        };
+
+        const overlay = document.createElement('div');
+        overlay.className = 'movie-overlay';
+        overlay.innerHTML = '<span class="overlay-label">줄거리:</span> ' + movie.overview;
+
+        imgWrapper.appendChild(img);
+        imgWrapper.appendChild(overlay);
+
+        const info = document.createElement('div');
+        info.className = 'movie-info';
+        info.innerHTML =
+            '<p class="movie-title">' + movie.title + '</p>' +
+            '<p class="movie-date"><span class="icon-cal">&#128197;</span> ' + movie.release_date + '</p>' +
+            '<p class="movie-rating"><span class="icon-star">&#9733;</span> ' + movie.vote_average + '/10</p>';
+
+        card.appendChild(imgWrapper);
+        card.appendChild(info);
+        return card;
+    }
+
+    function setupInfiniteScroll() {
+        const sentinel = document.getElementById('scrollSentinel');
+        const observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && !isLoading && !allLoaded) {
+                loadNextBatch();
+            }
+        }, { rootMargin: '200px' });
+        observer.observe(sentinel);
+    }
+
+    function applyFilterAndSort() {
+        const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+        const sortVal = document.querySelector('input[name="sort"]:checked');
+
+        filteredMovies = allMovies.filter(m =>
+            m.title.toLowerCase().includes(keyword) ||
+            m.genre.toLowerCase().includes(keyword) ||
+            m.overview.toLowerCase().includes(keyword)
+        );
+
+        if (sortVal) {
+            filteredMovies.sort((a, b) => {
+                if (sortVal.value === 'rating-desc') return b.vote_average - a.vote_average;
+                if (sortVal.value === 'rating-asc')  return a.vote_average - b.vote_average;
+                if (sortVal.value === 'date-desc')   return new Date(b.release_date) - new Date(a.release_date);
+                if (sortVal.value === 'date-asc')    return new Date(a.release_date) - new Date(b.release_date);
+            });
+        }
+
+        document.getElementById('moviesGrid').innerHTML = '';
+        currentPage = 0;
+        isLoading = false;
+        allLoaded = false;
+        document.getElementById('loadingIndicator').style.display = 'block';
+        loadNextBatch();
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', applyFilterAndSort);
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') applyFilterAndSort();
+    });
+
+    document.querySelectorAll('input[name="sort"]').forEach(radio => {
+        radio.addEventListener('change', applyFilterAndSort);
+    });
+</script>
+
+</body>
+</html>
