@@ -297,6 +297,13 @@ body {
     line-height: 1.4;
 }
 
+/* --- No Results --- */
+.no-results {
+    font-size: 14px;
+    color: #888888;
+    padding: 20px;
+}
+
 /* --- Loading Indicator --- */
 .loading-indicator {
     text-align: center;

@@ -103,6 +103,10 @@
         if (batch.length === 0) {
             allLoaded = true;
             document.getElementById('loadingIndicator').style.display = 'none';
+            if (currentPage === 0) {
+                document.getElementById('moviesGrid').innerHTML =
+                    '<p class="no-results">검색 결과가 없습니다.</p>';
+            }
             isLoading = false;
             return;
         }
@@ -202,6 +206,7 @@
     document.getElementById('searchInput').addEventListener('keydown', e => {
         if (e.key === 'Enter') applyFilterAndSort();
     });
+    document.getElementById('searchInput').addEventListener('input', applyFilterAndSort);
 
     document.querySelectorAll('input[name="sort"]').forEach(radio => {
         radio.addEventListener('change', applyFilterAndSort);
